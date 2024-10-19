@@ -1,75 +1,65 @@
 import java.io.File;
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.NoSuchElementException;
 
-public class SongImporter
-{
-    // SongImporter does not store any data, use "static"
-    // This method opens the file given by the parameter filename.
-    // Then it reads the data and breaks the lines up based on commas into a series of fields.
-    // Those fields are then used to create Song objects
-    public static ArrayList<Song> importSongsFromCSV(String filename)
-    {
+public class SongImporter {
+    public static ArrayList<Song> importSongsFromCSV(String filename) {
         ArrayList<Song> songs = new ArrayList<Song>();
         int lineNumber = 0;
 
-        // The code in this "try" block will run. Any errors will get handled by the "catch" below. 
         try {
             // Create a File object from the filename
             File file = new File(filename);
-            
-            // Create a Scanner object, this will read from the file.
+
+            // Create a Scanner object to read from the file
             Scanner csv = new Scanner(file);
 
-            // First line is a header - print it to see what it looks like.
-            // artist_name, track_name, release_date, genre, len, shake the audience, obscene, danceability, loudness, topic
+            // Check if the file has any content
+            if (!csv.hasNextLine()) {
+                System.out.println("The file is empty.");
+                csv.close();
+                return songs; // Return an empty list if no content
+            }
+
+            // First line is the header, we print it out for reference
             String headerFields = csv.nextLine();
             System.out.println("Header fields: " + headerFields);
 
-            // This while loop will loop until there are no more lines left in the CSV file.
-            while (csv.hasNextLine()) 
-            {
-                lineNumber++; // Keep track of line numbers to make inspection of data errors simpler.
+            // Loop through the CSV file, line by line
+            while (csv.hasNextLine()) {
+                lineNumber++; // Track the line number to handle errors
 
-                // Limit to 30 lines for testing (remove when you are testing real files)
-                if (lineNumber > 30)
-                {
+                // Optional: limit to 30 lines for testing
+                if (lineNumber > 30) {
                     break;
                 }
 
-                // Read one line from the CSV file and store it in the variable "line"
+                // Read a line and split it into fields
                 String line = csv.nextLine();
-
-                // The string is then split on each comma into an array of fields.
                 String[] fields = line.split(",");
 
-                // Each field is given a name to simply their usage in constructing songs. 
+                // Parse the fields correctly for the constructor
                 String artistName = fields[0];
                 String trackName = fields[1];
-                String releaseDate = fields[2];
+                int releaseYear = Integer.parseInt(fields[2]); // Parse as integer
                 String genre = fields[3];
-                String length = fields[4];
+                double duration = Double.parseDouble(fields[4]); // Parse as double
                 String shakeTheAudience = fields[5];
-                String obscene = fields[6];
-                String danceability = fields[7];
-                String loudness = fields[8];
+                boolean isExplicit = Boolean.parseBoolean(fields[6]); // Parse as boolean
+                double danceability = Double.parseDouble(fields[7]); // Parse as double
+                double loudness = Double.parseDouble(fields[8]); // Parse as double
                 String topic = fields[9];
 
-                // Debug print
-                //System.out.println("artist: " + artist + " length: " + length + "topic: " + topic);
+                // Create a new Song object with all parsed data
+                Song song = new Song(artistName, trackName, releaseYear, genre, duration,
+                                     shakeTheAudience, isExplicit, danceability, loudness, topic);
 
-                // Replace the next line with your song constructor
-                Song song = new Song(artistName, trackName); // code to construct a song object
-
-                // Add the song object to the data output. (Leave alone!~)
+                // Add the song object to the list
                 songs.add(song);
             }
             csv.close();
         } catch (Exception ex) {
-            // If there is an error, this code will run
+            // Handle errors
             System.out.println("Error on line: " + lineNumber);
             ex.printStackTrace();
         }
